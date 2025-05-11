@@ -1,0 +1,228 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Đăng nhập Demo</h1>
+    <p>Ứng dụng Demo đăng nhập sử dụng Google và ASP.NET Core API</p>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Đăng nhập Google (Client-side)</h5>
+                </div>
+                <div class="card-body">
+                    <div id="g_id_onload"
+                        data-client_id="@ViewBag.GoogleClientId"
+                        data-callback="handleCredentialResponse">
+                    </div>
+                    <div class="g_id_signin" 
+                        data-type="standard" 
+                        data-size="large" 
+                        data-theme="outline" 
+                        data-text="sign_in_with" 
+                        data-shape="rectangular" 
+                        data-logo_alignment="left">
+                    </div>
+
+                    <hr />
+                    <h5>Đăng nhập Google (Server-side)</h5>
+                    <p>Sử dụng OAuth 2.0 Server-side flow</p>
+                    <a href="/login-google" class="btn btn-primary">Đăng nhập với Google</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="authTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active text-white" id="login-tab" data-bs-toggle="tab" href="#login" role="tab" aria-controls="login" aria-selected="true">Đăng nhập</a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link text-white" id="register-tab" data-bs-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false">Đăng ký</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="authTabsContent">
+                        <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                            <form id="loginForm">
+                                <div class="form-group mb-3">
+                                    <label for="loginUsername">Tên đăng nhập</label>
+                                    <input type="text" class="form-control" id="loginUsername" name="username" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="loginPassword">Mật khẩu</label>
+                                    <input type="password" class="form-control" id="loginPassword" name="password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+                            <form id="registerForm">
+                                <div class="form-group mb-3">
+                                    <label for="registerUsername">Tên đăng nhập</label>
+                                    <input type="text" class="form-control" id="registerUsername" name="username" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="registerEmail">Email</label>
+                                    <input type="email" class="form-control" id="registerEmail" name="email" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="registerDisplayName">Tên hiển thị</label>
+                                    <input type="text" class="form-control" id="registerDisplayName" name="displayName">
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="registerPassword">Mật khẩu</label>
+                                    <input type="password" class="form-control" id="registerPassword" name="password" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Đăng ký</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4" id="login-result" style="display: none;">
+        <div class="alert alert-success">
+            <p><strong>Đăng nhập thành công!</strong></p>
+            <p>Thông tin người dùng:</p>
+            <div id="user-info"></div>
+            <button class="btn btn-primary mt-2" onclick="goToDashboard()">Đến Trang Dashboard</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        function handleCredentialResponse(response) {
+            const idToken = response.credential;
+            
+            // Gửi token lên server để xác thực
+            fetch('/api/auth/google', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ idToken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Đăng nhập thành công:', data);
+                
+                // Lưu token vào localStorage
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                
+                // Hiển thị thông tin người dùng
+                document.getElementById('login-result').style.display = 'block';
+                document.getElementById('user-info').innerHTML = `
+                    <p><strong>ID:</strong> ${data.user.id}</p>
+                    <p><strong>Email:</strong> ${data.user.email}</p>
+                    <p><strong>Tên:</strong> ${data.user.displayName || 'N/A'}</p>
+                    ${data.user.profilePictureUrl ? `<p><img src="${data.user.profilePictureUrl}" alt="Profile" width="50" /></p>` : ''}
+                `;
+            })
+            .catch(error => {
+                console.error('Lỗi đăng nhập:', error);
+                alert('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại!');
+            });
+        }
+
+        function goToDashboard() {
+            window.location.href = '/dashboard';
+        }
+
+        // Xử lý đăng nhập bằng username/password
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Đăng nhập thành công:', data);
+                
+                // Lưu token vào localStorage
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                
+                // Hiển thị thông tin người dùng
+                document.getElementById('login-result').style.display = 'block';
+                document.getElementById('user-info').innerHTML = `
+                    <p><strong>ID:</strong> ${data.user.id}</p>
+                    <p><strong>Email:</strong> ${data.user.email}</p>
+                    <p><strong>Username:</strong> ${data.user.username || 'N/A'}</p>
+                    <p><strong>Tên:</strong> ${data.user.displayName || 'N/A'}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Lỗi đăng nhập:', error);
+                alert('Đăng nhập thất bại: ' + (error.message || 'Lỗi không xác định'));
+            });
+        });
+
+        // Xử lý đăng ký
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const displayName = document.getElementById('registerDisplayName').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, displayName, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Đăng ký thành công:', data);
+                
+                // Lưu token vào localStorage
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user_data', JSON.stringify(data.user));
+                
+                // Hiển thị thông tin người dùng
+                document.getElementById('login-result').style.display = 'block';
+                document.getElementById('user-info').innerHTML = `
+                    <p><strong>ID:</strong> ${data.user.id}</p>
+                    <p><strong>Email:</strong> ${data.user.email}</p>
+                    <p><strong>Username:</strong> ${data.user.username || 'N/A'}</p>
+                    <p><strong>Tên:</strong> ${data.user.displayName || 'N/A'}</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Lỗi đăng ký:', error);
+                alert('Đăng ký thất bại: ' + (error.message || 'Lỗi không xác định'));
+            });
+        });
+    </script>
+}

@@ -1,0 +1,72 @@
+# .NET Core build folders
+bin/
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Visual Studio files
+.vs/
+.vscode/
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.tlb
+*.tlh
+*.bak
+*.cache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.sdf
+*.opensdf
+*.unsuccessfulbuild
+ipch/
+[Bb]in
+[Dd]ebug*/
+[Rr]elease*/
+Ankh.NoLoad
+
+# Thông tin nhạy cảm - chứa client ID và client secret 
+Login/appsettings.json
+Login/appsettings.Development.json
+Login/appsettings.Production.json
+Login/appsettings.Staging.json
+
+# Lưu ý: Không loại trừ file mẫu
+!Login/appsettings.Example.json
+
+# Secrets file
+secrets.json
+
+# Bỏ qua file database
+*.mdf
+*.ldf
+
+# SQLITE
+*.db
+
+# JetBrains tools
+.idea/
+*.sln.iml 
